@@ -20,7 +20,7 @@ class PushActivity : AppCompatActivity() {
         val roomId = intent.getStringExtra("room")
         val id = UUID.randomUUID().toString()
         pref = db.getReference(roomId)
-
+        pref.child("users").child(id).setValue(0)
         pref.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
