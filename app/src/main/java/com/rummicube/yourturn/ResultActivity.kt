@@ -22,10 +22,12 @@ class ResultActivity : AppCompatActivity() {
             }
 
             override fun onDataChange(data: DataSnapshot) {
-                pref.removeEventListener(this)
                 val count = data.child("max").value.toString().toInt() - 1
-
-                val users = data.child("users").children.sortedBy { it.value.toString().toLong() }
+                val users = data.child("users").children.sortedBy {
+                    if (it.value.toString().toLong() == 0L)
+                        2000000000000000
+                    else it.value.toString().toLong()
+                }
                 users.forEachIndexed { i, data ->
                     if (data.key == id) {
                         result_text.text =

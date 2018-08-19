@@ -4,23 +4,23 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
+import android.util.Log
 import com.google.firebase.database.*
 import kotlinx.android.synthetic.main.activity_push.*
-import java.util.*
 
 class PushActivity : AppCompatActivity() {
 
     val db = FirebaseDatabase.getInstance()
     lateinit var pref: DatabaseReference
     var isFull = false
+    var isClicked = false
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_push)
 
         val roomId = intent.getStringExtra("room")
-        val id = UUID.randomUUID().toString()
+        val id = intent.getStringExtra("id")
         pref = db.getReference(roomId)
-        pref.child("users").child(id).setValue(0)
         pref.addValueEventListener(object : ValueEventListener {
             override fun onCancelled(p0: DatabaseError) {
             }
@@ -28,6 +28,10 @@ class PushActivity : AppCompatActivity() {
             override fun onDataChange(data: DataSnapshot) {
                 val count = data.child("count").value.toString().toInt()
                 val max = data.child("max").value.toString().toInt()
+                val realCount = data.child("users").childrenCount.toInt()
+                if (count != realCount) {
+                    pref.child("count").setValue(realCount)
+                }
                 if (count == max) {
                     pref.removeEventListener(this)
                     startCount()
@@ -40,6 +44,8 @@ class PushActivity : AppCompatActivity() {
         button.setOnClickListener {
             if (!isFull)
                 return@setOnClickListener
+            isClicked = true
+            Log.e("sadfasdf", "asdf ${id}")
             pref.child("users").child(id).setValue(ServerValue.TIMESTAMP)
             startActivity(Intent(this@PushActivity, ResultActivity::class.java).apply {
                 putExtra("id", id)
